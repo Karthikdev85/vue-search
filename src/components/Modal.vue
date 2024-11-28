@@ -1,13 +1,13 @@
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-[#161616] bg-opacity-50 p-4"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-[#161616] bg-opacity-50 p-4 shadow-lg"
     @click.self="$emit('closeModal')"
   >
     <div
       class="relative max-w-4xl w-full max-h-[90vh] overflow-y-auto rounded-lg shadow-2xl transform transition-all duration-300 scale-100"
       :class="{
         'bg-white': !darkMode,
-        'bg-gray-900': darkMode,
+        'bg-gray-800': darkMode,
       }"
     >
       <!-- Close Button -->
@@ -37,7 +37,6 @@
 
       <!-- Modal Content -->
       <div class="grid md:grid-cols-2 gap-6 p-6">
-        <!-- Image -->
         <div class="md:h-[400px]">
           <img
             :src="result.imageUrl"

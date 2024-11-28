@@ -24,7 +24,7 @@
       v-model="searchQuery"
       @input="debounceSearch"
       placeholder="Search images..."
-      class="w-full pl-10 pr-4 py-2 rounded-full focus:outline-none focus:ring-2 transition-all duration-300"
+      class="w-full pl-10 pr-4 py-2 rounded-full outline-none focus:ring-2 transition-all duration-100"
       :class="{
         'bg-white border-gray-300 text-gray-900 focus:ring-blue-500': !darkMode,
         'bg-gray-800 border-gray-700 text-gray-100 focus:ring-blue-700':

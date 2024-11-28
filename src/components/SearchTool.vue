@@ -112,7 +112,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, watch } from "vue";
+import { ref, onMounted } from "vue";
 import SearchBar from "./SearchBar.vue";
 import SearchResultList from "./SearchResultList.vue";
 import Loader from "./Loader.vue";
@@ -188,19 +188,19 @@ const fetchSearchResults = async (query, page = 1) => {
     });
 
     const data = response.data;
-    console.log(data);
-    // If no results or less than 10, we've reached the end
     hasMoreResults.value = data.results.length === IMAGES_PER_PAGE;
     totalPages.value = data.total_pages;
 
     const transformedResults = data.results.map((photo) => ({
       id: photo.id,
-      title: photo.alt_description || "Untitled Image",
-      snippet: photo.description || "No description available",
+      title: capitalizeFirstLetter(photo.alt_description) || "Untitled Image",
+      snippet:
+        capitalizeFirstLetter(photo.description) || "No description available",
       imageUrl: photo.urls.small,
       details: {
         fullDescription:
-          photo.description || "No detailed description available.",
+          capitalizeFirstLetter(photo.description) ||
+          "No detailed description available.",
         metadata: {
           photographer: photo.user.name,
           likes: photo.likes,
@@ -223,8 +223,12 @@ const fetchSearchResults = async (query, page = 1) => {
   }
 };
 
+function capitalizeFirstLetter(string) {
+  if (!string) return string;
+  return string.charAt(0).toUpperCase() + string.slice(1);
+}
+
 const handleResultClick = (result) => {
-  console.log(result);
   selectedResult.value = result;
 };
 
