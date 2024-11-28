@@ -27,7 +27,7 @@
           class="text-sm line-clamp-2"
           :class="{
             'text-gray-600': !darkMode,
-            'text-gray-400': darkMode,
+            'text-gray-300': darkMode,
           }"
         >
           {{ result.snippet }}
@@ -39,7 +39,7 @@
           class="text-sm"
           :class="{
             'text-gray-500': !darkMode,
-            'text-gray-400': darkMode,
+            'text-gray-300': darkMode,
           }"
         >
           By {{ result.details.metadata.photographer }}

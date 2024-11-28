@@ -1,5 +1,6 @@
 # Vue Search
 Fetch high-quality images from the Unsplash API
+![alt text](<Screenshot 2024-11-28 143832.png>)
 
 # Setup for local development
 1. git clone https://github.com/{your-username}/vue-search.git

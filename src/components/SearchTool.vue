@@ -101,6 +101,7 @@
               'bg-blue-500 text-white hover:bg-blue-600': !isDarkMode,
               'bg-blue-700 text-gray-100 hover:bg-blue-800': isDarkMode,
               'opacity-50 cursor-not-allowed': isLoading,
+              'ml-4': currentPage > 1,
             }"
           >
             Next
