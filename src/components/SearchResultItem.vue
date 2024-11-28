@@ -1,6 +1,7 @@
 <template>
   <div
-    class="rounded-lg overflow-hidden shadow-md transition-all duration-300 transform hover:-translate-y-2"
+    @click="openModal"
+    class="rounded-lg overflow-hidden shadow-md transition-all duration-300 transform hover:-translate-y-2 cursor-pointer"
     :class="{
       'bg-white': !darkMode,
       'bg-gray-800': darkMode,
@@ -32,18 +33,6 @@
       </p>
 
       <div class="flex justify-between items-center">
-        <a
-          :href="result.details.metadata.downloadLink"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="px-3 py-1 rounded-full text-sm transition-colors"
-          :class="{
-            'bg-blue-500 text-white hover:bg-blue-600': !darkMode,
-            'bg-blue-700 text-gray-100 hover:bg-blue-800': darkMode,
-          }"
-        >
-          Download
-        </a>
         <span
           class="text-xs"
           :class="{
@@ -55,11 +44,22 @@
         </span>
       </div>
     </div>
+
+    <!-- Modal -->
+    <teleport to="body">
+      <Modal
+        v-if="isModalOpen"
+        :result="result"
+        :dark-mode="darkMode"
+        @closeModal="closeModal"
+      />
+    </teleport>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from "vue";
+import Modal from "./Modal.vue";
+import { ref } from "vue";
 
 const props = defineProps({
   result: {
@@ -71,4 +71,34 @@ const props = defineProps({
     default: false,
   },
 });
+
+// Modal state
+const isModalOpen = ref(false);
+
+// Modal methods
+const openModal = () => {
+  isModalOpen.value = true;
+  // Prevent body scroll when modal is open
+  document.body.style.overflow = "hidden";
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  // Restore body scroll
+  document.body.style.overflow = "auto";
+};
 </script>
+
+<style scoped>
+/* Optional: Add smooth scale animation for modal */
+.modal-enter-active,
+.modal-leave-active {
+  transition: all 0.3s ease;
+}
+
+.modal-enter-from,
+.modal-leave-to {
+  opacity: 0;
+  transform: scale(0.9);
+}
+</style>

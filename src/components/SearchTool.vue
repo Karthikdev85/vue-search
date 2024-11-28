@@ -174,18 +174,6 @@ const loadMoreResults = async (direction) => {
   }
 };
 
-// watch(currentPage, async (newPage) => {
-//   if (isLoading.value || !hasMoreResults.value) return;
-//   try {
-//     await fetchSearchResults(currentQuery.value, currentPage.value);
-//   } catch (error) {
-//     console.error("Load more error:", error);
-//     hasMoreResults.value = false;
-//   } finally {
-//     isLoading.value = false;
-//   }
-// });
-
 // Function to fetch search results from Unsplash API
 const fetchSearchResults = async (query, page = 1) => {
   try {
@@ -205,7 +193,6 @@ const fetchSearchResults = async (query, page = 1) => {
     hasMoreResults.value = data.results.length === IMAGES_PER_PAGE;
     totalPages.value = data.total_pages;
 
-    // Transform Unsplash results to our format
     const transformedResults = data.results.map((photo) => ({
       id: photo.id,
       title: photo.alt_description || "Untitled Image",
@@ -220,6 +207,7 @@ const fetchSearchResults = async (query, page = 1) => {
           downloadLink: photo.links.download,
           createdAt: new Date(photo.created_at).toLocaleDateString(),
         },
+        imageUrl: photo.urls.raw,
       },
     }));
 
@@ -236,6 +224,7 @@ const fetchSearchResults = async (query, page = 1) => {
 };
 
 const handleResultClick = (result) => {
+  console.log(result);
   selectedResult.value = result;
 };
 
