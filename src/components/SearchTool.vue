@@ -6,7 +6,7 @@
       'bg-gray-900 text-gray-100': isDarkMode,
     }"
   >
-    <div class="max-w-4xl mx-auto px-4 py-8">
+    <div class="max-w-5xl mx-auto px-4 py-8">
       <div class="flex justify-between items-center mb-6">
         <h1
           class="text-2xl font-bold transition-colors"
@@ -57,7 +57,7 @@
             <p>No results found</p>
           </div>
         </transition-group>
-
+        <!-- 
         <div
           v-if="searchResults.length && hasMoreResults"
           class="text-center mt-6"
@@ -74,6 +74,37 @@
           >
             {{ isLoading ? "Loading..." : "Load More" }}
           </button>
+        </div> -->
+        <div
+          v-if="searchResults.length && hasMoreResults"
+          class="text-center mt-6"
+        >
+          <button
+            v-if="currentPage > 1"
+            @click="loadMoreResults('prev')"
+            :disabled="isLoading"
+            class="px-4 py-2 rounded-full transition-all duration-300"
+            :class="{
+              'bg-blue-500 text-white hover:bg-blue-600': !isDarkMode,
+              'bg-blue-700 text-gray-100 hover:bg-blue-800': isDarkMode,
+              'opacity-50 cursor-not-allowed': isLoading,
+            }"
+          >
+            Prev
+          </button>
+          <button
+            v-if="currentPage < totalPages"
+            @click="loadMoreResults('next')"
+            :disabled="isLoading"
+            class="px-4 py-2 rounded-full transition-all duration-300"
+            :class="{
+              'bg-blue-500 text-white hover:bg-blue-600': !isDarkMode,
+              'bg-blue-700 text-gray-100 hover:bg-blue-800': isDarkMode,
+              'opacity-50 cursor-not-allowed': isLoading,
+            }"
+          >
+            Next
+          </button>
         </div>
       </div>
     </div>
@@ -81,10 +112,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, watch } from "vue";
 import SearchBar from "./SearchBar.vue";
 import SearchResultList from "./SearchResultList.vue";
 import Loader from "./Loader.vue";
+import axios from "axios";
+
+const API_URL = "https://api.unsplash.com/search/photos";
+const IMAGES_PER_PAGE = 20;
 
 // Reactive state variables
 const searchResults = ref([]);
@@ -95,6 +130,7 @@ const currentQuery = ref("");
 const hasMoreResults = ref(true);
 const isDarkMode = ref(false);
 const selectedResult = ref(null);
+const totalPages = ref(0);
 
 // Function to perform search
 const performSearch = async (query) => {
@@ -116,13 +152,19 @@ const performSearch = async (query) => {
   }
 };
 
-const loadMoreResults = async () => {
+const loadMoreResults = async (direction) => {
   if (isLoading.value || !hasMoreResults.value) return;
 
   isLoading.value = true;
-  currentPage.value++;
+  if (direction === "next") {
+    currentPage.value++;
+  }
+  if (direction === "prev") {
+    currentPage.value--;
+  }
 
   try {
+    searchResults.value.length = 0;
     await fetchSearchResults(currentQuery.value, currentPage.value);
   } catch (error) {
     console.error("Load more error:", error);
@@ -132,50 +174,65 @@ const loadMoreResults = async () => {
   }
 };
 
+// watch(currentPage, async (newPage) => {
+//   if (isLoading.value || !hasMoreResults.value) return;
+//   try {
+//     await fetchSearchResults(currentQuery.value, currentPage.value);
+//   } catch (error) {
+//     console.error("Load more error:", error);
+//     hasMoreResults.value = false;
+//   } finally {
+//     isLoading.value = false;
+//   }
+// });
+
 // Function to fetch search results from Unsplash API
 const fetchSearchResults = async (query, page = 1) => {
-  const accessKey = process.env.VITE_API_KEY;
-  console.log(accessKey);
-  const url = `https://api.unsplash.com/search/photos?query=${query}&page=${page}&per_page=10`;
+  try {
+    const accessKey = import.meta.env.VITE_API_KEY;
 
-  const response = await fetch(url, {
-    headers: {
-      Authorization: `Client-ID ${accessKey}`,
-    },
-  });
+    const url = `${API_URL}?query=${query}&page=${page}&per_page=${IMAGES_PER_PAGE}&client_id=${accessKey}`;
 
-  if (!response.ok) {
-    throw new Error("Failed to fetch results");
-  }
-
-  const data = await response.json();
-
-  // If no results or less than 10, we've reached the end
-  hasMoreResults.value = data.results.length === 10;
-
-  // Transform Unsplash results to our format
-  const transformedResults = data.results.map((photo) => ({
-    id: photo.id,
-    title: photo.alt_description || "Untitled Image",
-    snippet: photo.description || "No description available",
-    imageUrl: photo.urls.small,
-    details: {
-      fullDescription:
-        photo.description || "No detailed description available.",
-      metadata: {
-        photographer: photo.user.name,
-        likes: photo.likes,
-        downloadLink: photo.links.download,
-        createdAt: new Date(photo.created_at).toLocaleDateString(),
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Client-ID ${accessKey}`,
       },
-    },
-  }));
+    });
 
-  // Append new results or replace if it's the first page
-  searchResults.value =
-    page === 1
-      ? transformedResults
-      : [...searchResults.value, ...transformedResults];
+    const data = response.data;
+    console.log(data);
+    // If no results or less than 10, we've reached the end
+    hasMoreResults.value = data.results.length === IMAGES_PER_PAGE;
+    totalPages.value = data.total_pages;
+
+    // Transform Unsplash results to our format
+    const transformedResults = data.results.map((photo) => ({
+      id: photo.id,
+      title: photo.alt_description || "Untitled Image",
+      snippet: photo.description || "No description available",
+      imageUrl: photo.urls.small,
+      details: {
+        fullDescription:
+          photo.description || "No detailed description available.",
+        metadata: {
+          photographer: photo.user.name,
+          likes: photo.likes,
+          downloadLink: photo.links.download,
+          createdAt: new Date(photo.created_at).toLocaleDateString(),
+        },
+      },
+    }));
+
+    // Append new results or replace if it's the first page
+    searchResults.value = transformedResults;
+    // page === 1
+    //   ? transformedResults
+    //   : [...searchResults.value, ...transformedResults];
+  } catch (error) {
+    console.error("Failed to fetch results:", error);
+    // errorMessage.value = "Failed to fetch search results";
+    hasMoreResults.value = false;
+  }
 };
 
 const handleResultClick = (result) => {
